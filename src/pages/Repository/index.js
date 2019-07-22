@@ -16,6 +16,7 @@ export default class Repository extends Component {
 
   state = {
     repository: {},
+    owner: {},
     issues: [],
     loading: false,
   };
@@ -27,24 +28,25 @@ export default class Repository extends Component {
 
     const [repository, issues] = await Promise.all([
       api.get(`repos/${repoName}`),
-      api.get(`repos/${repoName}/issues`),
-      {
+      api.get(`repos/${repoName}/issues`, {
         params: {
           state: 'open',
           per_page: 5,
         },
-      },
+      }),
     ]);
 
     this.setState({
       repository: repository.data,
+      owner: repository.data.owner,
       issues: issues.data,
       loading: false,
     });
   }
 
   render() {
-    const { repository, issues, loading } = this.state;
+    const { repository, owner, issues, loading } = this.state;
+    console.log(owner);
 
     if (loading) {
       return <Loading>Carregando</Loading>;
@@ -52,7 +54,7 @@ export default class Repository extends Component {
     return (
       <Container>
         <Owner>
-          <img src={repository.owner.avatar_url} alt={repository.owner.login} />
+          <img src={owner.avatar_url} alt={owner.login} />
           <h1>{repository.name}</h1>
           <p>{repository.description}</p>
         </Owner>
