@@ -6,17 +6,20 @@ import { FaGithubAlt, FaPlus, FaSpinner } from 'react-icons/fa';
 import api from '../../services/api';
 
 import Container from '../../components/Container';
-import { Form, SubmitButton, List } from './styles';
+import { Form, SubmitButton, List, MsgError } from './styles';
 
 export default class Main extends Component {
   state = {
     newRepo: '',
     repositories: [],
     loading: false,
+    error: null,
+    msg: '',
   };
 
   // carregar os dados do localstorage
   componentDidMount() {
+    // localStorage.removeItem('repositories');
     const repositories = localStorage.getItem('repositories');
 
     if (repositories) {
@@ -33,39 +36,55 @@ export default class Main extends Component {
   }
 
   handleInputChange = e => {
-    this.setState({ newRepo: e.target.value });
+    this.setState({ newRepo: e.target.value, error: null, msg: null });
   };
 
   handleSubmit = async e => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
 
-    this.setState({ loading: true });
+      this.setState({ loading: true, error: false });
 
-    const { newRepo, repositories } = this.state;
+      const { newRepo, repositories } = this.state;
 
-    const response = await api.get(`/repos/${newRepo}`);
+      if (newRepo === '')
+        this.setState({ msg: 'Você precisa indicar um repositório' });
 
-    const data = {
-      name: response.data.full_name,
-    };
+      const hasRepo = repositories.find(
+        r => r.name.toLowerCase() === newRepo.toLowerCase()
+      );
 
-    this.setState({
-      repositories: [...repositories, data],
-      newRepo: '',
-      loading: false,
-    });
+      if (hasRepo) {
+        this.setState({ msg: 'Repositório duplicado' });
+        return;
+      }
+      const response = await api.get(`/repos/${newRepo}`);
+
+      const data = {
+        name: response.data.full_name,
+      };
+
+      this.setState({
+        repositories: [...repositories, data],
+        newRepo: '',
+        loading: false,
+      });
+    } catch (error) {
+      this.setState({ error: true });
+    } finally {
+      this.setState({ loading: false });
+    }
   };
 
   render() {
-    const { newRepo, repositories, loading } = this.state;
+    const { newRepo, repositories, loading, error, msg } = this.state;
     return (
       <Container>
         <h1>
           <FaGithubAlt />
           Repositories
         </h1>
-
-        <Form onSubmit={this.handleSubmit}>
+        <Form onSubmit={this.handleSubmit} error={error}>
           <input
             type="text"
             placeholder="Adicionar repositorio"
@@ -80,6 +99,7 @@ export default class Main extends Component {
             )}
           </SubmitButton>
         </Form>
+        {msg ? <MsgError>{msg}</MsgError> : ''}
 
         <List>
           {repositories.map(repository => (

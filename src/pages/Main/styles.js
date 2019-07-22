@@ -28,10 +28,15 @@ export const Form = styled.form`
 
   input {
     flex: 1;
-    border: 1px solid #eee;
+    border: 1px solid ${props => (props.error ? '#ff6b6b' : '#eee')};
     padding: 10px 15px;
     font-size: 16px;
   }
+`;
+
+export const MsgError = styled.div`
+  color: #ff6b6b;
+  font-weight: bold;
 `;
 
 const rotate = keyframes`
