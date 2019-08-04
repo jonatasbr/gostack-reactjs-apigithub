@@ -1,1 +1,1 @@
-Este projeto cumpre o desafio-05 de aplicação ReacJS consumindo API do GitHub.
+Este projeto cumpre o modulo-05 e desafio-05 de aplicação ReactJS consumindo API do GitHub.
